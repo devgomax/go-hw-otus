@@ -6,10 +6,10 @@ import (
 	"strings"
 )
 
-// ErrInvalidString ошибка для невалидной строки
+// ErrInvalidString .
 var ErrInvalidString = errors.New("invalid string")
 
-// Unpack распаковывает строку с повторяющимися рунами
+// Unpack распаковывает строку с повторяющимися рунами.
 func Unpack(raw string) (string, error) {
 	var (
 		err   error
