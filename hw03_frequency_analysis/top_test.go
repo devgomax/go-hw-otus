@@ -80,3 +80,64 @@ func TestTop10(t *testing.T) {
 		}
 	})
 }
+
+var (
+	text2 = "z x c v b n n m m p p y y l l k k j j h h g g f f s s a a r r t t"
+	text3 = "a k k h h c c"
+	text4 = "- cat and dog , and dog, one dog,two cats and one man"
+	text5 = "one One ONe ONE"
+)
+
+func TestMoreThanTop10SameCount(t *testing.T) {
+	t.Run("more than 10 words with the same biggest count", func(t *testing.T) {
+		expected := []string{
+			"a", // 2
+			"f", // 2
+			"g", // 2
+			"h", // 2
+			"j", // 2
+			"k", // 2
+			"l", // 2
+			"m", // 2
+			"n", // 2
+			"p", // 2
+		}
+		require.Equal(t, expected, Top10(text2))
+	})
+
+	t.Run("less than 10 words", func(t *testing.T) {
+		expected := []string{
+			"c", // 2
+			"h", // 2
+			"k", // 2
+			"a", // 1
+		}
+		require.Equal(t, expected, Top10(text3))
+	})
+
+	t.Run("words with punctuation marks", func(t *testing.T) {
+		expected := []string{
+			"and",     // 3
+			"one",     // 2
+			",",       // 1
+			"-",       // 1
+			"cat",     // 1
+			"cats",    // 1
+			"dog",     // 1
+			"dog,",    // 1
+			"dog,two", // 1
+			"man",     // 1
+		}
+		require.Equal(t, expected, Top10(text4))
+	})
+
+	t.Run("same word in different cases", func(t *testing.T) {
+		expected := []string{
+			"ONE", // 1
+			"ONe", // 1
+			"One", // 1
+			"one", // 1
+		}
+		require.Equal(t, expected, Top10(text5))
+	})
+}
