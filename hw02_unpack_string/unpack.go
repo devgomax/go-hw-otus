@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-// ErrInvalidString .
+// ErrInvalidString ошибка невалидной строки
 var ErrInvalidString = errors.New("invalid string")
 
 // Unpack распаковывает строку с повторяющимися рунами
