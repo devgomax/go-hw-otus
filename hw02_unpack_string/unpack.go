@@ -6,33 +6,23 @@ import (
 	"strings"
 )
 
-// ErrInvalidString ошибка невалидной строки
+// ErrInvalidString ошибка для невалидной строки
 var ErrInvalidString = errors.New("invalid string")
 
 // Unpack распаковывает строку с повторяющимися рунами
 func Unpack(raw string) (string, error) {
-	if raw == "" {
-		return raw, nil
-	}
-
-	splitted := strings.Split(raw, "")
-
 	var (
 		err   error
 		cache string // предыдущий символ в строке
 	)
 
-	if _, err = strconv.Atoi(splitted[0]); err == nil {
-		return "", ErrInvalidString
-	}
-
 	builder := strings.Builder{}
 
-	for _, symbol := range splitted {
+	for _, symbol := range strings.Split(raw, "") {
 		var count int // кол-во повторений предыдущего символа
 
 		if count, err = strconv.Atoi(symbol); err == nil { // текущий символ - цифра
-			if _, err = strconv.Atoi(cache); err == nil { // предыдущий и текущий символы - цифры
+			if _, err = strconv.Atoi(cache); err == nil || cache == "" { // 2 цифры подряд, или строка начинается с цифры
 				return "", ErrInvalidString
 			}
 		} else if _, err = strconv.Atoi(cache); err != nil { // предыдущий и текущий символы не цифры
