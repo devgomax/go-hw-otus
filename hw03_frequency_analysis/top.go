@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-// Top10 возвращает до 10 наиболее часто встречаемых в строке слов
+// Top10 возвращает до 10 наиболее часто встречаемых в строке слов.
 func Top10(raw string) []string {
 	counter := make(map[string]int)
 
