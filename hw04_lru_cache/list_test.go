@@ -48,4 +48,35 @@ func TestList(t *testing.T) {
 		}
 		require.Equal(t, []int{70, 80, 60, 40, 10, 30, 50}, elems)
 	})
+
+	t.Run("push front to empty list", func(t *testing.T) {
+		l := NewList()
+		val := 10
+
+		item := l.PushFront(val)
+
+		require.Equal(t, 1, l.Len())
+		require.Equal(t, item, l.Front())
+		require.Equal(t, item, l.Back())
+	})
+
+	t.Run("push back to empty list", func(t *testing.T) {
+		l := NewList()
+		val := 10
+
+		item := l.PushBack(val)
+
+		require.Equal(t, 1, l.Len())
+		require.Equal(t, item, l.Front())
+		require.Equal(t, item, l.Back())
+	})
+
+	t.Run("first has no prev, last has no next", func(t *testing.T) {
+		l := NewList()
+
+		l.PushFront(10)
+
+		require.Nil(t, l.Front().Prev)
+		require.Nil(t, l.Back().Next)
+	})
 }
