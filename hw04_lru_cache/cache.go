@@ -26,25 +26,31 @@ func NewCache(capacity int) Cache {
 	}
 }
 
+type cachedValue struct {
+	key   Key
+	value any
+}
+
 func (lc *lruCache) Set(key Key, value any) bool {
 	lc.mutex.Lock()
 	defer lc.mutex.Unlock()
 
+	cv := cachedValue{key: key, value: value}
+
 	item, ok := lc.items[key]
 	if ok {
-		item.Value = value
+		item.Value = cv
 		lc.queue.MoveToFront(item)
 		return true
 	}
 
-	if lc.queue.Len() == lc.capacity {
+	lc.items[key] = lc.queue.PushFront(cv)
+
+	if lc.queue.Len() > lc.capacity {
 		last := lc.queue.Back()
 		lc.queue.Remove(last)
-		delete(lc.items, last.CacheKey)
+		delete(lc.items, last.Value.(cachedValue).key)
 	}
-
-	lc.items[key] = lc.queue.PushFront(value)
-	lc.items[key].CacheKey = key
 
 	return false
 }
@@ -55,7 +61,7 @@ func (lc *lruCache) Get(key Key) (any, bool) {
 
 	if item, ok := lc.items[key]; ok {
 		lc.queue.MoveToFront(item)
-		return item.Value, true
+		return item.Value.(cachedValue).value, true
 	}
 
 	return nil, false

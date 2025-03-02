@@ -11,10 +11,9 @@ type List interface {
 }
 
 type ListItem struct {
-	CacheKey Key
-	Value    interface{}
-	Next     *ListItem
-	Prev     *ListItem
+	Value interface{}
+	Next  *ListItem
+	Prev  *ListItem
 }
 
 type list struct {

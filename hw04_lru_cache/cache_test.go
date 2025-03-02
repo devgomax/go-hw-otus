@@ -113,6 +113,18 @@ func TestCache(t *testing.T) {
 		require.False(t, ok)
 		require.Nil(t, val)
 	})
+
+	t.Run("zero capacity", func(t *testing.T) {
+		capacity := 0
+		tKey := Key("1")
+		c := NewCache(capacity)
+
+		_ = c.Set(tKey, 1)
+
+		val, ok := c.Get(tKey)
+		require.False(t, ok)
+		require.Nil(t, val)
+	})
 }
 
 func TestCacheMultithreading(_ *testing.T) {
