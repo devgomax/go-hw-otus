@@ -18,7 +18,7 @@ func Run(tasks []Task, n, m int) error {
 
 	for i := 0; i < n; i++ {
 		wg.Add(1)
-		go worker(&wg, jobs, &errorsCount) //nolint:gosec
+		go worker(&wg, jobs, &errorsCount)
 	}
 
 	err := loadFrom(tasks, jobs, &errorsCount, int32(m)) //nolint:gosec
