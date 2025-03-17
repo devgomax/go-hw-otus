@@ -93,6 +93,15 @@ func TestPipeline(t *testing.T) {
 		require.Len(t, result, 0)
 		require.Less(t, int64(elapsed), int64(abortDur)+int64(fault))
 	})
+
+	t.Run("nil data case", func(t *testing.T) {
+		result := make([]string, 0)
+		for s := range ExecutePipeline(nil, nil, stages...) {
+			result = append(result, s.(string))
+		}
+
+		require.Len(t, result, 0)
+	})
 }
 
 func TestAllStageStop(t *testing.T) {
