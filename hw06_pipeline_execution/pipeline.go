@@ -31,11 +31,14 @@ func cancellableChan(in In, done In) Out {
 	out := make(Bi)
 
 	go func() {
-		defer close(out)
+		defer func() {
+			close(out)
+			<-in
+		}()
+
 		for {
 			select {
 			case <-done:
-				<-in
 				return
 			case v, ok := <-in:
 				if !ok {
