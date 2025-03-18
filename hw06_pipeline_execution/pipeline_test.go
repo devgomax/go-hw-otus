@@ -102,6 +102,41 @@ func TestPipeline(t *testing.T) {
 
 		require.Len(t, result, 0)
 	})
+
+	t.Run("done after the long last stage started case", func(t *testing.T) {
+		in := make(Bi)
+		done := make(Bi)
+		data := []int{1, 2, 3, 4, 5}
+
+		stages := append(stages, g("Long sleep", func(v interface{}) interface{} {
+			time.Sleep(10 * time.Second)
+			return v
+		}))
+
+		// Abort after 1200ms
+		abortDur := sleepPerStage * 6
+		go func() {
+			<-time.After(abortDur)
+			close(done)
+		}()
+
+		go func() {
+			for _, v := range data {
+				in <- v
+			}
+			close(in)
+		}()
+
+		result := make([]string, 0, 10)
+		start := time.Now()
+		for s := range ExecutePipeline(in, done, stages...) {
+			result = append(result, s.(string))
+		}
+		elapsed := time.Since(start)
+
+		require.Len(t, result, 0)
+		require.Less(t, int64(elapsed), int64(abortDur)+int64(fault))
+	})
 }
 
 func TestAllStageStop(t *testing.T) {

@@ -24,7 +24,7 @@ func ExecutePipeline(in In, done In, stages ...Stage) Out {
 		out = stage(cancellableChan(out, done))
 	}
 
-	return out
+	return cancellableChan(out, done)
 }
 
 func cancellableChan(in In, done In) Out {
