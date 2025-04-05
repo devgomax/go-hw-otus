@@ -44,7 +44,7 @@ func TestCopy(t *testing.T) {
 			err = Copy(testdata+"input.txt", tempFile.Name(), tt.offset, tt.limit)
 			require.NoError(t, err)
 
-			refFile, err := os.OpenFile(tt.refTo, os.O_RDONLY, 0644)
+			refFile, err := os.OpenFile(tt.refTo, os.O_RDONLY, 0o644)
 			require.NoError(t, err)
 			defer refFile.Close()
 

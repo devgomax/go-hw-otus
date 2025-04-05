@@ -32,7 +32,7 @@ func Copy(fromPath, toPath string, offset, limit int64) error {
 		limit = fInfo.Size() - offset
 	}
 
-	fileFrom, err := os.OpenFile(fromPath, os.O_RDONLY, 0644)
+	fileFrom, err := os.OpenFile(fromPath, os.O_RDONLY, 0o644)
 	if err != nil {
 		return err
 	}
@@ -48,7 +48,7 @@ func Copy(fromPath, toPath string, offset, limit int64) error {
 	bar := pb.Full.Start64(limit)
 	barReader := bar.NewProxyReader(fileFrom)
 
-	fileTo, err := os.OpenFile(toPath, os.O_RDWR|os.O_CREATE, 0777)
+	fileTo, err := os.OpenFile(toPath, os.O_RDWR|os.O_CREATE, 0o777)
 	if err != nil {
 		return err
 	}
