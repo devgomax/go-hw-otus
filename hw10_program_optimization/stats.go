@@ -1,25 +1,26 @@
 package hw10programoptimization
 
 import (
-	"encoding/json"
+	"bufio"
+	"errors"
 	"fmt"
 	"io"
-	"regexp"
 	"strings"
+
+	jsoniter "github.com/json-iterator/go"
 )
 
+// User stores user e-mails.
 type User struct {
-	ID       int
-	Name     string
-	Username string
-	Email    string
-	Phone    string
-	Password string
-	Address  string
+	Email string
 }
 
+var ErrInvalidJSON = errors.New("invalid json line")
+
+// DomainStat stores domain statistics.
 type DomainStat map[string]int
 
+// GetDomainStat calculates domain statistics from input reader.
 func GetDomainStat(r io.Reader, domain string) (DomainStat, error) {
 	u, err := getUsers(r)
 	if err != nil {
@@ -28,39 +29,44 @@ func GetDomainStat(r io.Reader, domain string) (DomainStat, error) {
 	return countDomains(u, domain)
 }
 
-type users [100_000]User
+func getUsers(r io.Reader) ([]User, error) {
+	var (
+		user  User
+		users []User
+	)
 
-func getUsers(r io.Reader) (result users, err error) {
-	content, err := io.ReadAll(r)
-	if err != nil {
-		return
-	}
+	json := jsoniter.ConfigCompatibleWithStandardLibrary
 
-	lines := strings.Split(string(content), "\n")
-	for i, line := range lines {
-		var user User
-		if err = json.Unmarshal([]byte(line), &user); err != nil {
-			return
+	scanner := bufio.NewScanner(r)
+
+	for i := 0; scanner.Scan(); i++ {
+		if err := json.Unmarshal(scanner.Bytes(), &user); err != nil {
+			return nil, errors.Join(err, ErrInvalidJSON)
 		}
-		result[i] = user
+
+		users = append(users, user)
 	}
-	return
+
+	if err := scanner.Err(); err != nil {
+		return nil, err
+	}
+
+	return users, nil
 }
 
-func countDomains(u users, domain string) (DomainStat, error) {
+func countDomains(u []User, domain string) (DomainStat, error) {
 	result := make(DomainStat)
 
 	for _, user := range u {
-		matched, err := regexp.Match("\\."+domain, []byte(user.Email))
-		if err != nil {
-			return nil, err
-		}
+		if strings.HasSuffix(user.Email, "."+domain) {
+			idx := strings.LastIndex(user.Email, "@")
+			if idx == -1 {
+				continue
+			}
 
-		if matched {
-			num := result[strings.ToLower(strings.SplitN(user.Email, "@", 2)[1])]
-			num++
-			result[strings.ToLower(strings.SplitN(user.Email, "@", 2)[1])] = num
+			result[strings.ToLower(user.Email[idx+1:])]++
 		}
 	}
+
 	return result, nil
 }
