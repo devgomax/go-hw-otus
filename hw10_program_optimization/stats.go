@@ -7,7 +7,7 @@ import (
 	"io"
 	"strings"
 
-	jsoniter "github.com/json-iterator/go"
+	jsoniter "github.com/json-iterator/go" //nolint:depguard
 )
 
 // User stores user e-mails.
