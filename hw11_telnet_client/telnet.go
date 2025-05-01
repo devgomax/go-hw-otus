@@ -51,15 +51,31 @@ func (c *telnetClient) Close() error {
 }
 
 func (c *telnetClient) Send() error {
-	if _, err := io.Copy(c.conn, c.in); err != nil {
+	buf := make([]byte, 1024)
+
+	n, err := c.in.Read(buf)
+	if err != nil {
 		return err
 	}
+
+	if _, err = c.conn.Write(buf[:n]); err != nil {
+		return err
+	}
+
 	return nil
 }
 
 func (c *telnetClient) Receive() error {
-	if _, err := io.Copy(c.out, c.conn); err != nil {
+	buf := make([]byte, 1024)
+
+	n, err := c.conn.Read(buf)
+	if err != nil {
 		return err
 	}
+
+	if _, err = c.out.Write(buf[:n]); err != nil {
+		return err
+	}
+
 	return nil
 }
