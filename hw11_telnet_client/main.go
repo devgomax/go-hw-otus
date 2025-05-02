@@ -27,7 +27,6 @@ func main() {
 	if err := client.Connect(); err != nil {
 		log.Fatalf("Connection error: %v", err)
 	}
-	defer client.Close()
 
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer cancel()
