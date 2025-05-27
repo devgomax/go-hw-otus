@@ -2,25 +2,27 @@ package app
 
 import (
 	"context"
+
+	"github.com/devgomax/go-hw-otus/hw12_13_14_15_calendar/internal/storage"
 )
 
-type App struct { // TODO
+// App структура основного приложения.
+type App struct {
+	repo storage.Repository
 }
 
-type Logger interface { // TODO
+// New конструктор основного приложения.
+func New(repo storage.Repository) *App {
+	return &App{
+		repo: repo,
+	}
 }
 
-type Storage interface { // TODO
-}
-
-func New(logger Logger, storage Storage) *App {
-	return &App{}
-}
-
+// CreateEvent метод регистрации события.
 func (a *App) CreateEvent(ctx context.Context, id, title string) error {
 	// TODO
 	return nil
-	// return a.storage.CreateEvent(storage.Event{ID: id, Title: title})
+	// return a.repo.CreateEvent(ctx, &storage.Event{ID: id, Title: title})
 }
 
 // TODO

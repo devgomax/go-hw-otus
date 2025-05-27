@@ -2,43 +2,89 @@ package main
 
 import (
 	"context"
-	"flag"
+	syslog "log"
+	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
 
-	"github.com/fixme_my_friend/hw12_13_14_15_calendar/internal/app"
-	"github.com/fixme_my_friend/hw12_13_14_15_calendar/internal/logger"
-	internalhttp "github.com/fixme_my_friend/hw12_13_14_15_calendar/internal/server/http"
-	memorystorage "github.com/fixme_my_friend/hw12_13_14_15_calendar/internal/storage/memory"
+	"github.com/devgomax/go-hw-otus/hw12_13_14_15_calendar/internal/storage" //nolint:depguard
+	sqlstorage "github.com/devgomax/go-hw-otus/hw12_13_14_15_calendar/internal/storage/sql"
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
+	"github.com/rs/zerolog/log"
+
+	"github.com/devgomax/go-hw-otus/hw12_13_14_15_calendar/internal/app"
+	"github.com/devgomax/go-hw-otus/hw12_13_14_15_calendar/internal/config"
+	"github.com/devgomax/go-hw-otus/hw12_13_14_15_calendar/internal/logger"
+	internalhttp "github.com/devgomax/go-hw-otus/hw12_13_14_15_calendar/internal/server/http"
+	memorystorage "github.com/devgomax/go-hw-otus/hw12_13_14_15_calendar/internal/storage/memory"
+	"github.com/spf13/pflag"
 )
 
-var configFile string
-
-func init() {
-	flag.StringVar(&configFile, "config", "/etc/calendar/config.toml", "Path to configuration file")
-}
-
 func main() {
-	flag.Parse()
+	ctx, cancel := signal.NotifyContext(context.Background(),
+		syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
+	defer cancel()
 
-	if flag.Arg(0) == "version" {
+	if pflag.Arg(0) == "version" {
 		printVersion()
 		return
 	}
 
-	config := NewConfig()
-	logg := logger.New(config.Logger.Level)
+	cfg, err := config.NewConfig()
+	if err != nil {
+		cancel()
+		log.Fatal().Err(err).Msg("failed to get service config")
+	}
 
-	storage := memorystorage.New()
-	calendar := app.New(logg, storage)
+	if err = logger.ConfigureLogging(cfg.Logger); err != nil {
+		cancel()
+		log.Fatal().Err(err).Msg("failed to configure logging")
+	}
 
-	server := internalhttp.NewServer(logg, calendar)
+	var repo storage.Repository
 
-	ctx, cancel := signal.NotifyContext(context.Background(),
-		syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
-	defer cancel()
+	switch cfg.Database.DBType {
+	case config.DBTypeSQL:
+		repo = sqlstorage.New()
+	case config.DBTypeInMemory:
+		repo = memorystorage.New()
+	default:
+		cancel()
+		log.Fatal().Msg("invalid config value for db_type")
+	}
+
+	if err = repo.Connect(ctx, ""); err != nil { // Empty DNS for PG to process environment variables
+		cancel()
+		log.Fatal().Err(err).Msg("failed to connect to DB")
+	}
+	defer repo.Close()
+
+	calendar := app.New(repo)
+
+	file, err := os.OpenFile("server.log", os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0664)
+	if err != nil {
+		cancel()
+		repo.Close()
+		log.Fatal().Err(err).Msg("Не удалось открыть файл для логов")
+	}
+	defer file.Close()
+
+	servLogger := syslog.New(file, "", 0)
+
+	router := chi.NewRouter()
+	router.Use(internalhttp.NewLoggingMiddleware(servLogger))
+	router.Use(middleware.Recoverer)
+	router.Get("/", func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+		if _, inErr := w.Write([]byte("hello-world")); inErr != nil {
+			log.Error().Err(inErr).Msg("failed to write response")
+		}
+	})
+
+	server := internalhttp.NewServer(calendar, cfg.ServerConfig, router)
 
 	go func() {
 		<-ctx.Done()
@@ -47,15 +93,13 @@ func main() {
 		defer cancel()
 
 		if err := server.Stop(ctx); err != nil {
-			logg.Error("failed to stop http server: " + err.Error())
+			log.Error().Err(err).Msg("failed to stop http server")
 		}
 	}()
 
-	logg.Info("calendar is running...")
+	log.Info().Msg("calendar is running...")
 
-	if err := server.Start(ctx); err != nil {
-		logg.Error("failed to start http server: " + err.Error())
-		cancel()
-		os.Exit(1) //nolint:gocritic
+	if err = server.Start(ctx); err != nil {
+		log.Fatal().Err(err).Msg("failed to start http server")
 	}
 }
