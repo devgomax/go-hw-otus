@@ -1,9 +1,9 @@
 package config
 
 import (
-	"github.com/pkg/errors"  //nolint:depguard
-	"github.com/spf13/pflag" //nolint:depguard
-	"github.com/spf13/viper" //nolint:depguard
+	"github.com/pkg/errors"
+	"github.com/spf13/pflag"
+	"github.com/spf13/viper"
 )
 
 func init() {
