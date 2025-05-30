@@ -19,7 +19,7 @@ func New(repo storage.Repository) *App {
 }
 
 // CreateEvent метод регистрации события.
-func (a *App) CreateEvent(ctx context.Context, id, title string) error {
+func (a *App) CreateEvent(ctx context.Context, id, title string) error { //nolint:revive
 	// TODO
 	return nil
 	// return a.repo.CreateEvent(ctx, &storage.Event{ID: id, Title: title})

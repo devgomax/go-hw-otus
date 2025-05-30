@@ -9,17 +9,16 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/devgomax/go-hw-otus/hw12_13_14_15_calendar/internal/storage" //nolint:depguard
-	sqlstorage "github.com/devgomax/go-hw-otus/hw12_13_14_15_calendar/internal/storage/sql"
-	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
-	"github.com/rs/zerolog/log"
-
 	"github.com/devgomax/go-hw-otus/hw12_13_14_15_calendar/internal/app"
 	"github.com/devgomax/go-hw-otus/hw12_13_14_15_calendar/internal/config"
 	"github.com/devgomax/go-hw-otus/hw12_13_14_15_calendar/internal/logger"
 	internalhttp "github.com/devgomax/go-hw-otus/hw12_13_14_15_calendar/internal/server/http"
+	"github.com/devgomax/go-hw-otus/hw12_13_14_15_calendar/internal/storage"
 	memorystorage "github.com/devgomax/go-hw-otus/hw12_13_14_15_calendar/internal/storage/memory"
+	sqlstorage "github.com/devgomax/go-hw-otus/hw12_13_14_15_calendar/internal/storage/sql"
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
+	"github.com/rs/zerolog/log"
 	"github.com/spf13/pflag"
 )
 
@@ -36,7 +35,7 @@ func main() {
 	cfg, err := config.NewConfig()
 	if err != nil {
 		cancel()
-		log.Fatal().Err(err).Msg("failed to get service config")
+		log.Fatal().Err(err).Msg("failed to get service config") //nolint:gocritic
 	}
 
 	if err = logger.ConfigureLogging(cfg.Logger); err != nil {
@@ -64,7 +63,7 @@ func main() {
 
 	calendar := app.New(repo)
 
-	file, err := os.OpenFile("server.log", os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0664)
+	file, err := os.OpenFile("server.log", os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0o664)
 	if err != nil {
 		cancel()
 		repo.Close()
@@ -100,6 +99,9 @@ func main() {
 	log.Info().Msg("calendar is running...")
 
 	if err = server.Start(ctx); err != nil {
+		cancel()
+		repo.Close()
+		file.Close()
 		log.Fatal().Err(err).Msg("failed to start http server")
 	}
 }

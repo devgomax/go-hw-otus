@@ -15,7 +15,7 @@ type Repository struct {
 	eventsByID   map[string]*storage.Event
 	eventsByUser map[string][]*storage.Event
 	sortedEvents []*storage.Event
-	mu           sync.RWMutex //nolint:unused
+	mu           sync.RWMutex
 }
 
 // New конструктор БД типа in-memory.
