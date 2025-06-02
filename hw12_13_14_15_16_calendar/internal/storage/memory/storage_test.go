@@ -74,7 +74,6 @@ func TestStorage(t *testing.T) {
 		})
 
 		require.Equal(t, repo.sortedEvents, eventsCopy)
-
 	})
 
 	t.Run("delete events", func(t *testing.T) {
