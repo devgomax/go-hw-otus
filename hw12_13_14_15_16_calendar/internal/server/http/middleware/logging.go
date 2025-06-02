@@ -1,4 +1,4 @@
-package internalhttp
+package middleware
 
 import (
 	"fmt"
@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"strings"
 	"time"
+
+	"github.com/devgomax/go-hw-otus/hw12_13_14_15_calendar/internal/server"
 )
 
 // NewLoggingMiddleware создает middleware для логирования сетевых запросов.
@@ -14,7 +16,7 @@ func NewLoggingMiddleware(logger *log.Logger) func(next http.Handler) http.Handl
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			start := time.Now().UTC()
 			ip := strings.Split(r.RemoteAddr, ":")[0]
-			ts := start.Format("02/Jan/2006:15:04:05 -0700")
+			ts := start.Format(server.LogTimestampFormat)
 			method := r.Method
 			path := r.URL.RequestURI()
 			userAgent := r.UserAgent()

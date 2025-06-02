@@ -12,7 +12,7 @@ build:
 	go build -v -o $(BIN) -ldflags "$(LDFLAGS)" ./cmd/calendar
 
 run: build
-	$(BIN) --config="./configs/config.yaml"
+	$(BIN) --config="./configs/config.toml"
 
 migration:
 	goose create change_my_name sql -dir $GOOSE_MIGRATION_DIR
@@ -34,6 +34,9 @@ version: build
 
 test:
 	go test -race ./internal/...
+
+generate:
+	go generate
 
 install-lint-deps:
 	(which golangci-lint > /dev/null) || curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(shell go env GOPATH)/bin v1.62.2
