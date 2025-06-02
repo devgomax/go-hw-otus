@@ -1,6 +1,8 @@
 package memorystorage
 
 import (
+	"context"
+	"slices"
 	"strconv"
 	"testing"
 	"time"
@@ -28,7 +30,6 @@ func TestStorage(t *testing.T) {
 		str := strconv.Itoa(i)
 
 		events = append(events, &storage.Event{
-			ID:             str,
 			Title:          "Title" + str,
 			StartsAt:       ptr(start),
 			EndsAt:         ptr(start.Add(10 * time.Second)),
@@ -46,7 +47,7 @@ func TestStorage(t *testing.T) {
 		})
 
 		for i, event := range events {
-			err := repo.CreateEvent(t.Context(), event)
+			err := repo.CreateEvent(context.Background(), event)
 			require.NoError(t, err)
 			require.Len(t, repo.sortedEvents, i+1)
 			require.Len(t, repo.eventsByUser, i+1)
@@ -61,13 +62,19 @@ func TestStorage(t *testing.T) {
 		})
 
 		for _, event := range events {
-			err := repo.CreateEvent(t.Context(), event)
+			err := repo.CreateEvent(context.Background(), event)
 			require.NoError(t, err)
 		}
 
-		for i, event := range repo.sortedEvents {
-			require.Equal(t, strconv.Itoa(i), event.ID)
-		}
+		eventsCopy := make([]*storage.Event, len(events))
+		copy(eventsCopy, repo.sortedEvents)
+
+		slices.SortFunc(eventsCopy, func(i, j *storage.Event) int {
+			return i.StartsAt.Compare(*j.StartsAt)
+		})
+
+		require.Equal(t, repo.sortedEvents, eventsCopy)
+
 	})
 
 	t.Run("delete events", func(t *testing.T) {
@@ -75,10 +82,10 @@ func TestStorage(t *testing.T) {
 			cleanup(repo)
 		})
 
-		err := repo.CreateEvent(t.Context(), events[0])
+		err := repo.CreateEvent(context.Background(), events[0])
 		require.NoError(t, err)
 
-		err = repo.DeleteEvent(t.Context(), events[0].ID)
+		err = repo.DeleteEvent(context.Background(), events[0].ID)
 		require.NoError(t, err)
 		require.Empty(t, repo.eventsByID[events[0].ID])
 		require.Empty(t, repo.sortedEvents)
