@@ -49,7 +49,7 @@ func main() {
 		log.Fatal().Err(err).Msg("failed to configure logging")
 	}
 
-	var repo storage.Repository
+	var repo storage.IRepository
 
 	switch cfg.Database.DBType {
 	case config.DBTypeSQL:

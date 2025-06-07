@@ -18,7 +18,7 @@ type Server struct {
 }
 
 // NewServer конструктор для grpc сервера.
-func NewServer(logger *syslog.Logger, app *app.App) *Server {
+func NewServer(logger *syslog.Logger, app app.IApp) *Server {
 	server := grpc.NewServer(
 		grpc.ChainUnaryInterceptor(interceptors.NewUnaryServerLoggingInterceptor(logger)),
 	)

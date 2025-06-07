@@ -6,11 +6,11 @@ import (
 
 // App структура основного приложения.
 type App struct {
-	repo storage.Repository
+	repo storage.IRepository
 }
 
 // New конструктор основного приложения.
-func New(repo storage.Repository) *App {
+func New(repo storage.IRepository) *App {
 	return &App{
 		repo: repo,
 	}

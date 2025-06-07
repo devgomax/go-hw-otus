@@ -9,11 +9,11 @@ import (
 type Implementation struct {
 	eventspb.UnimplementedEventsServer
 
-	app *app.App
+	app app.IApp
 }
 
 // NewEventsServer конструктор grpc-сервера Events.
-func NewEventsServer(app *app.App) *Implementation {
+func NewEventsServer(app app.IApp) *Implementation {
 	return &Implementation{
 		app: app,
 	}
