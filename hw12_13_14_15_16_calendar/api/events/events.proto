@@ -1,0 +1,97 @@
+syntax = "proto3";
+
+package github.devgomax.go_hw_otus.calendar.api.events;
+
+option go_package = "github.com/devgomax/go-hw-otus/calendar/internal/app/events";
+
+import "google/api/annotations.proto";
+import "google/api/field_behavior.proto";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/duration.proto";
+
+service Events {
+  rpc CreateEvent(Event) returns (CreateEventResponse) {
+    option (google.api.http) = {
+      post: "/v1/events",
+      body: "*"
+    };
+  }
+
+  rpc UpdateEvent(Event) returns (UpdateEventResponse) {
+    option (google.api.http) = {
+      patch: "/v1/events/{id}",
+      body: "*"
+    };
+  }
+
+  rpc DeleteEvent(DeleteEventRequest) returns (DeleteEventResponse) {
+    option (google.api.http) = {
+      delete: "/v1/events/{id}"
+    };
+  }
+
+  rpc ReadDailyEvents(ReadDailyEventsRequest) returns (ReadDailyEventsResponse) {
+    option (google.api.http) = {
+      get: "/v1/events/daily"
+    };
+  }
+
+  rpc ReadWeeklyEvents(ReadWeeklyEventsRequest) returns (ReadWeeklyEventsResponse) {
+    option (google.api.http) = {
+      get: "/v1/events/weekly"
+    };
+  }
+
+  rpc ReadMonthlyEvents(ReadMonthlyEventsRequest) returns (ReadMonthlyEventsResponse) {
+    option (google.api.http) = {
+      get: "/v1/events/monthly"
+    };
+  }
+}
+
+message Event {
+    string id = 1;
+    string title = 2;
+    google.protobuf.Timestamp starts_at = 3;
+    google.protobuf.Timestamp ends_at = 4;
+    string description = 5;
+    string user_id = 6;
+    google.protobuf.Duration notify_interval = 7;
+}
+
+message CreateEventResponse {}
+
+message UpdateEventResponse {}
+
+message DeleteEventRequest {
+    string id = 1 [(google.api.field_behavior) = REQUIRED];
+}
+
+message DeleteEventResponse {}
+
+message ReadDailyEventsRequest {
+    string user_id = 1 [(google.api.field_behavior) = REQUIRED];
+    google.protobuf.Timestamp date = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+message ReadDailyEventsResponse {
+    repeated Event events = 1;
+}
+
+message ReadWeeklyEventsRequest {
+    string user_id = 1 [(google.api.field_behavior) = REQUIRED];
+    google.protobuf.Timestamp date = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+message ReadWeeklyEventsResponse {
+    repeated Event events = 1;
+}
+
+message ReadMonthlyEventsRequest {
+    string user_id = 1 [(google.api.field_behavior) = REQUIRED];
+    google.protobuf.Timestamp date = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+message ReadMonthlyEventsResponse {
+    repeated Event events = 1;
+}

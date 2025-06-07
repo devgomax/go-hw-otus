@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/devgomax/go-hw-otus/hw12_13_14_15_calendar/internal/storage"
+	"github.com/google/uuid"
 	"github.com/pkg/errors"
 )
 
@@ -41,6 +42,7 @@ func (r *Repository) CreateEvent(_ context.Context, event *storage.Event) error 
 		return errors.Errorf("[memorystorage::CreateEvent]: event with ID %s already exists", event.ID)
 	}
 
+	event.ID = uuid.New().String() // имитируем поведение "UUID PRIMARY KEY" как в postgres
 	r.eventsByID[event.ID] = event
 	r.eventsByUser[event.UserID] = append(r.eventsByUser[event.UserID], event)
 
