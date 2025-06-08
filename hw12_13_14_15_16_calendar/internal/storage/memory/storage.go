@@ -169,3 +169,22 @@ func (r *Repository) ReadMonthlyEvents(_ context.Context, userID string, fromDat
 
 	return result, nil
 }
+
+// ReadEventsToNotify читает события, у которых (starts_at - now()) <= notify_interval.
+func (r *Repository) ReadEventsToNotify(_ context.Context) ([]*storage.Event, error) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
+	now := time.Now().UTC()
+	processed := true
+
+	var result []*storage.Event
+	for _, event := range r.sortedEvents {
+		if event.StartsAt.Sub(now) <= event.NotifyInterval && event.EndsAt.Sub(now) > 0 && !*event.Processed {
+			event.Processed = &processed
+			result = append(result, event)
+		}
+	}
+
+	return result, nil
+}

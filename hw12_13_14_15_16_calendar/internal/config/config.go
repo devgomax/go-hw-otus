@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/pkg/errors"
 	"github.com/spf13/pflag"
@@ -52,12 +53,25 @@ func (sc *ServerConfig) GetAddr() string {
 	return fmt.Sprintf("%s:%s", sc.Host, sc.Port)
 }
 
+// MessageQueueConfig модель конфига для очереди сообщений.
+type MessageQueueConfig struct {
+	URL   string `mapstructure:"url"`
+	Queue string `mapstructure:"queue"`
+}
+
+// SchedulerConfig модель конфига для сервиса-планировщика.
+type SchedulerConfig struct {
+	DBReadInterval time.Duration `mapstructure:"db_read_interval"`
+}
+
 // Config модель основного конфига приложения.
 type Config struct {
-	Logger     LoggerConfig `mapstructure:"logger"`
-	Database   DBConfig     `mapstructure:"database"`
-	GRPCConfig ServerConfig `mapstructure:"grpc"`
-	HTTPConfig ServerConfig `mapstructure:"http"`
+	Logger             LoggerConfig       `mapstructure:"logger"`
+	Database           DBConfig           `mapstructure:"database"`
+	GRPCConfig         ServerConfig       `mapstructure:"grpc"`
+	HTTPConfig         ServerConfig       `mapstructure:"http"`
+	MessageQueueConfig MessageQueueConfig `mapstructure:"amqp"`
+	SchedulerConfig    SchedulerConfig    `mapstructure:"scheduler"`
 }
 
 // NewConfig конструктор для основного конфига приложения.

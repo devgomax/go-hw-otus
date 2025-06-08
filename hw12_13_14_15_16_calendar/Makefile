@@ -1,4 +1,4 @@
-BIN := "./bin/calendar"
+BIN := "./bin/"
 DOCKER_IMG="calendar:develop"
 
 GIT_HASH := $(shell git log --format="%h" -n 1)
@@ -9,16 +9,16 @@ GOOSE_MIGRATION_DIR="./migrations"
 GOOSE_DBSTRING="PGUSER=$(PGUSER) PGPASSWORD=$(PGPASSWORD) PGHOST=$(PGHOST) PGPORT=$(PGPORT) PGDATABASE=$(PGDATABASE)"
 
 build:
-	go build -v -o $(BIN) -ldflags "$(LDFLAGS)" ./cmd/calendar
+	go build -v -o $(BIN) -ldflags "$(LDFLAGS)" ./cmd/...
 
 run: build
-	$(BIN) --config="./configs/config.toml"
+	$(BIN)/calendar --config="./configs/config.toml"
 
 migration:
-	goose create change_my_name sql -dir $GOOSE_MIGRATION_DIR
+	goose create change_my_name sql -dir $(GOOSE_MIGRATION_DIR)
 
 migrate:
-	goose up GOOSE_DRIVER=$GOOSE_DRIVER GOOSE_MIGRATION_DIR=$GOOSE_MIGRATION_DIR GOOSE_DBSTRING=$GOOSE_DBSTRING
+	goose up GOOSE_DRIVER=$(GOOSE_DRIVER) GOOSE_MIGRATION_DIR=$(GOOSE_MIGRATION_DIR) GOOSE_DBSTRING=$(GOOSE_DBSTRING)
 
 build-img:
 	docker build \

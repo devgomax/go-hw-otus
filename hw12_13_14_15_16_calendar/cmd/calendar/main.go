@@ -9,7 +9,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/devgomax/go-hw-otus/hw12_13_14_15_calendar/internal/app"
+	"github.com/devgomax/go-hw-otus/hw12_13_14_15_calendar/internal/app/calendar"
 	"github.com/devgomax/go-hw-otus/hw12_13_14_15_calendar/internal/config"
 	"github.com/devgomax/go-hw-otus/hw12_13_14_15_calendar/internal/logger"
 	eventspb "github.com/devgomax/go-hw-otus/hw12_13_14_15_calendar/internal/pb/events"
@@ -67,7 +67,7 @@ func main() {
 	}
 	defer repo.Close()
 
-	calendar := app.New(repo)
+	calendarApp := calendar.New(repo)
 
 	file, err := os.OpenFile("server.log", os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0o664)
 	if err != nil {
@@ -79,7 +79,7 @@ func main() {
 
 	servLogger := syslog.New(file, "", 0)
 
-	serverGRPC := internalgrpc.NewServer(servLogger, calendar)
+	serverGRPC := internalgrpc.NewServer(servLogger, calendarApp)
 
 	wg := sync.WaitGroup{}
 

@@ -1,4 +1,4 @@
-package app
+package calendar
 
 import (
 	"context"
@@ -8,9 +8,10 @@ import (
 	"github.com/pkg/errors"
 )
 
-// CreateEvent метод регистрации события.
-func (a *App) CreateEvent(
+// UpdateEvent метод обновления события.
+func (a *App) UpdateEvent(
 	ctx context.Context,
+	id string,
 	title string,
 	description string,
 	userID string,
@@ -19,6 +20,7 @@ func (a *App) CreateEvent(
 	notifyInterval time.Duration,
 ) error {
 	event := storage.Event{
+		ID:             id,
 		Title:          title,
 		StartsAt:       startsAt,
 		EndsAt:         endAt,
@@ -27,7 +29,7 @@ func (a *App) CreateEvent(
 		NotifyInterval: notifyInterval,
 	}
 
-	err := a.repo.CreateEvent(ctx, &event)
+	err := a.repo.UpdateEvent(ctx, &event)
 
-	return errors.Wrap(err, "[app::CreateEvent]: failed to create event")
+	return errors.Wrapf(err, "[app::UpdateEvent]: failed to update event with ID %q", id)
 }
