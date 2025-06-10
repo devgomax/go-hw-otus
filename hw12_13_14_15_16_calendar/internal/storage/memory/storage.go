@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/devgomax/go-hw-otus/hw12_13_14_15_calendar/internal/storage"
+	"github.com/google/uuid"
 	"github.com/pkg/errors"
 )
 
@@ -41,6 +42,7 @@ func (r *Repository) CreateEvent(_ context.Context, event *storage.Event) error 
 		return errors.Errorf("[memorystorage::CreateEvent]: event with ID %s already exists", event.ID)
 	}
 
+	event.ID = uuid.New().String() // имитируем поведение "UUID PRIMARY KEY" как в postgres
 	r.eventsByID[event.ID] = event
 	r.eventsByUser[event.UserID] = append(r.eventsByUser[event.UserID], event)
 
@@ -161,6 +163,25 @@ func (r *Repository) ReadMonthlyEvents(_ context.Context, userID string, fromDat
 	var result []*storage.Event
 	for _, event := range r.sortedEvents {
 		if event.UserID == userID && event.StartsAt.Before(end) && event.EndsAt.After(start) {
+			result = append(result, event)
+		}
+	}
+
+	return result, nil
+}
+
+// ReadEventsToNotify читает события, у которых (starts_at - now()) <= notify_interval.
+func (r *Repository) ReadEventsToNotify(_ context.Context) ([]*storage.Event, error) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
+	now := time.Now().UTC()
+	processed := true
+
+	var result []*storage.Event
+	for _, event := range r.sortedEvents {
+		if event.StartsAt.Sub(now) <= event.NotifyInterval && event.EndsAt.Sub(now) > 0 && !*event.Processed {
+			event.Processed = &processed
 			result = append(result, event)
 		}
 	}

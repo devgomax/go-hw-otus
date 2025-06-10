@@ -1,4 +1,4 @@
-BIN := "./bin/calendar"
+BIN := "./bin/"
 DOCKER_IMG="calendar:develop"
 
 GIT_HASH := $(shell git log --format="%h" -n 1)
@@ -9,16 +9,16 @@ GOOSE_MIGRATION_DIR="./migrations"
 GOOSE_DBSTRING="PGUSER=$(PGUSER) PGPASSWORD=$(PGPASSWORD) PGHOST=$(PGHOST) PGPORT=$(PGPORT) PGDATABASE=$(PGDATABASE)"
 
 build:
-	go build -v -o $(BIN) -ldflags "$(LDFLAGS)" ./cmd/calendar
+	go build -v -o $(BIN) -ldflags "$(LDFLAGS)" ./cmd/...
 
 run: build
-	$(BIN) --config="./configs/config.yaml"
+	$(BIN)/calendar --config="./configs/config.toml"
 
 migration:
-	goose create change_my_name sql -dir $GOOSE_MIGRATION_DIR
+	goose create change_my_name sql -dir $(GOOSE_MIGRATION_DIR)
 
 migrate:
-	goose up GOOSE_DRIVER=$GOOSE_DRIVER GOOSE_MIGRATION_DIR=$GOOSE_MIGRATION_DIR GOOSE_DBSTRING=$GOOSE_DBSTRING
+	goose up GOOSE_DRIVER=$(GOOSE_DRIVER) GOOSE_MIGRATION_DIR=$(GOOSE_MIGRATION_DIR) GOOSE_DBSTRING=$(GOOSE_DBSTRING)
 
 build-img:
 	docker build \
@@ -34,6 +34,9 @@ version: build
 
 test:
 	go test -race ./internal/...
+
+generate:
+	go generate
 
 install-lint-deps:
 	(which golangci-lint > /dev/null) || curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(shell go env GOPATH)/bin v1.62.2

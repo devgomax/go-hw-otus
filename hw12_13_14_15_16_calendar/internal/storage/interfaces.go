@@ -5,8 +5,8 @@ import (
 	"time"
 )
 
-// Repository интерфейс хранилища, оперирующего событиями Event.
-type Repository interface {
+// IRepository интерфейс хранилища, оперирующего событиями Event.
+type IRepository interface {
 	Connect(ctx context.Context, dsn string) error
 	Close()
 	CreateEvent(ctx context.Context, event *Event) error

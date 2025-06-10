@@ -3,23 +3,29 @@ package main
 import (
 	"context"
 	syslog "log"
-	"net/http"
 	"os"
 	"os/signal"
+	"sync"
 	"syscall"
 	"time"
 
-	"github.com/devgomax/go-hw-otus/hw12_13_14_15_calendar/internal/app"
+	"github.com/devgomax/go-hw-otus/hw12_13_14_15_calendar/internal/app/calendar"
 	"github.com/devgomax/go-hw-otus/hw12_13_14_15_calendar/internal/config"
 	"github.com/devgomax/go-hw-otus/hw12_13_14_15_calendar/internal/logger"
+	eventspb "github.com/devgomax/go-hw-otus/hw12_13_14_15_calendar/internal/pb/events"
+	internalgrpc "github.com/devgomax/go-hw-otus/hw12_13_14_15_calendar/internal/server/grpc"
 	internalhttp "github.com/devgomax/go-hw-otus/hw12_13_14_15_calendar/internal/server/http"
+	"github.com/devgomax/go-hw-otus/hw12_13_14_15_calendar/internal/server/http/middleware"
 	"github.com/devgomax/go-hw-otus/hw12_13_14_15_calendar/internal/storage"
 	memorystorage "github.com/devgomax/go-hw-otus/hw12_13_14_15_calendar/internal/storage/memory"
 	sqlstorage "github.com/devgomax/go-hw-otus/hw12_13_14_15_calendar/internal/storage/sql"
 	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
+	chimiddleware "github.com/go-chi/chi/v5/middleware"
+	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/pflag"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 func main() {
@@ -43,7 +49,7 @@ func main() {
 		log.Fatal().Err(err).Msg("failed to configure logging")
 	}
 
-	var repo storage.Repository
+	var repo storage.IRepository
 
 	switch cfg.Database.DBType {
 	case config.DBTypeSQL:
@@ -61,7 +67,7 @@ func main() {
 	}
 	defer repo.Close()
 
-	calendar := app.New(repo)
+	calendarApp := calendar.New(repo)
 
 	file, err := os.OpenFile("server.log", os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0o664)
 	if err != nil {
@@ -73,35 +79,64 @@ func main() {
 
 	servLogger := syslog.New(file, "", 0)
 
-	router := chi.NewRouter()
-	router.Use(internalhttp.NewLoggingMiddleware(servLogger))
-	router.Use(middleware.Recoverer)
-	router.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		defer r.Body.Close()
-		if _, inErr := w.Write([]byte("hello-world")); inErr != nil {
-			log.Error().Err(inErr).Msg("failed to write response")
-		}
-	})
+	serverGRPC := internalgrpc.NewServer(servLogger, calendarApp)
 
-	server := internalhttp.NewServer(calendar, cfg.ServerConfig, router)
+	wg := sync.WaitGroup{}
 
+	wg.Add(1)
 	go func() {
+		defer wg.Done()
+		if err = serverGRPC.Start(cfg.GRPCConfig.GetAddr()); err != nil {
+			log.Fatal().Err(err).Msg("failed to run GRPC server")
+		}
+	}()
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+
+		<-ctx.Done()
+
+		serverGRPC.Stop()
+	}()
+
+	handler := chi.NewRouter()
+	handler.Use(middleware.NewLoggingMiddleware(servLogger))
+	handler.Use(chimiddleware.Recoverer)
+
+	gwmux := runtime.NewServeMux()
+	opts := []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
+	if err = eventspb.RegisterEventsHandlerFromEndpoint(ctx, gwmux, cfg.GRPCConfig.GetAddr(), opts); err != nil {
+		cancel()
+		repo.Close()
+		file.Close()
+		log.Fatal().Err(err).Msgf("failed to dial to %q", cfg.GRPCConfig.GetAddr())
+	}
+
+	handler.Handle("/*", gwmux)
+
+	server := internalhttp.NewServer(cfg.HTTPConfig.GetAddr(), handler)
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+
 		<-ctx.Done()
 
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second*3)
 		defer cancel()
 
 		if err := server.Stop(ctx); err != nil {
-			log.Error().Err(err).Msg("failed to stop http server")
+			log.Error().Err(err).Msg("failed to stop HTTP server")
 		}
 	}()
-
-	log.Info().Msg("calendar is running...")
 
 	if err = server.Start(ctx); err != nil {
 		cancel()
 		repo.Close()
 		file.Close()
-		log.Fatal().Err(err).Msg("failed to start http server")
+		log.Fatal().Err(err).Msg("failed to run HTTP server")
 	}
+
+	wg.Wait()
 }

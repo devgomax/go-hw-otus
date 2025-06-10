@@ -195,3 +195,50 @@ func (r *Repository) ReadMonthlyEvents(ctx context.Context, userID string, date 
 
 	return events, nil
 }
+
+// ReadEventsToNotify читает события, у которых (starts_at - now()) <= notify_interval.
+func (r *Repository) ReadEventsToNotify(ctx context.Context) ([]*storage.Event, error) {
+	now := time.Now().UTC()
+
+	builder := sq.StatementBuilder.PlaceholderFormat(sq.Dollar).
+		Select("id", "title", "starts_at", "user_id").
+		From(eventsTable).
+		Where(sq.And{
+			sq.Eq{"processed": false},
+			sq.LtOrEq{"starts_at - notify_interval": now},
+			sq.GtOrEq{"ends_at": now},
+		})
+
+	query, args, err := builder.ToSql()
+	if err != nil {
+		return nil, errors.Wrap(err, "[sqlstorage::ReadEventsToNotify]: can't build sql query")
+	}
+
+	var events []*storage.Event
+
+	if err = pgxscan.Select(ctx, r.pool, &events, query, args...); err != nil {
+		return nil, errors.Wrap(err, "[sqlstorage::ReadEventsToNotify]: can't execute sql query")
+	}
+
+	ids := make([]string, 0, len(events))
+	for _, event := range events {
+		ids = append(ids, event.ID)
+	}
+
+	updBuilder := sq.StatementBuilder.PlaceholderFormat(sq.Dollar).
+		Update(eventsTable).
+		Set("processed", true).
+		Where(sq.Eq{"id": ids})
+
+	query, args, err = updBuilder.ToSql()
+	if err != nil {
+		return nil, errors.Wrap(err, "[sqlstorage::ReadEventsToNotify]: can't build sql query")
+	}
+
+	_, err = r.pool.Exec(ctx, query, args...)
+	if err != nil {
+		return nil, errors.Wrap(err, "[sqlstorage::ReadEventsToNotify]: can't execute sql query")
+	}
+
+	return events, nil
+}

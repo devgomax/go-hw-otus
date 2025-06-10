@@ -1,15 +1,13 @@
 package config
 
 import (
+	"fmt"
+	"time"
+
 	"github.com/pkg/errors"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 )
-
-func init() {
-	pflag.String(ConfigPath, "/etc/calendar/config.yaml", "Path to configuration file")
-	pflag.Parse()
-}
 
 // Key строковый алиас для ключей конфигурации.
 type Key = string
@@ -50,23 +48,48 @@ type ServerConfig struct {
 	Port string `mapstructure:"port"`
 }
 
+// GetAddr возвращает строку вида "host:port".
+func (sc *ServerConfig) GetAddr() string {
+	return fmt.Sprintf("%s:%s", sc.Host, sc.Port)
+}
+
+// MessageQueueConfig модель конфига для очереди сообщений.
+type MessageQueueConfig struct {
+	URL   string `mapstructure:"url"`
+	Queue string `mapstructure:"queue"`
+}
+
+// SchedulerConfig модель конфига для сервиса-планировщика.
+type SchedulerConfig struct {
+	DBReadInterval time.Duration `mapstructure:"db_read_interval"`
+}
+
 // Config модель основного конфига приложения.
 type Config struct {
-	Logger       LoggerConfig `mapstructure:"logger"`
-	Database     DBConfig     `mapstructure:"database"`
-	ServerConfig ServerConfig `mapstructure:"server"`
+	Logger             LoggerConfig       `mapstructure:"logger"`
+	Database           DBConfig           `mapstructure:"database"`
+	GRPCConfig         ServerConfig       `mapstructure:"grpc"`
+	HTTPConfig         ServerConfig       `mapstructure:"http"`
+	MessageQueueConfig MessageQueueConfig `mapstructure:"amqp"`
+	SchedulerConfig    SchedulerConfig    `mapstructure:"scheduler"`
 }
 
 // NewConfig конструктор для основного конфига приложения.
 func NewConfig() (*Config, error) {
+	configPath := pflag.String(ConfigPath, "/etc/calendar/config.toml", "Path to configuration file")
+	pflag.Parse()
+
 	if err := viper.BindPFlags(pflag.CommandLine); err != nil {
 		return nil, errors.Wrap(err, "[main::NewConfig]: failed to bind flag set to config")
 	}
 
 	var c Config
 
-	viper.SetConfigFile(viper.GetString(ConfigPath))
+	viper.SetConfigFile(*configPath)
 	viper.AutomaticEnv()
+	if err := viper.ReadInConfig(); err != nil {
+		return nil, errors.Wrap(err, "[main::NewConfig]: failed to discover and read config file")
+	}
 
 	err := viper.Unmarshal(&c)
 	if err != nil {
