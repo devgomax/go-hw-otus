@@ -11,4 +11,5 @@ type Event struct {
 	Description    string        `db:"description" json:"description,omitempty"`
 	UserID         string        `db:"user_id" json:"user_id,omitempty"`
 	NotifyInterval time.Duration `db:"notify_interval" json:"notify_interval,omitempty"`
+	Processed      *bool         `db:"processed" json:"processed,omitempty"`
 }

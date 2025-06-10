@@ -1,4 +1,4 @@
-package app
+package calendar
 
 import (
 	"github.com/devgomax/go-hw-otus/hw12_13_14_15_calendar/internal/storage"
