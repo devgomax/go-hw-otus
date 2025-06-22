@@ -14,6 +14,12 @@ build:
 run: build
 	$(BIN)/calendar --config="./configs/config.toml"
 
+up:
+	docker-compose -f ./deployments/docker-compose.yaml up -d
+
+down:
+	docker-compose down
+
 migration:
 	goose create change_my_name sql -dir $(GOOSE_MIGRATION_DIR)
 
@@ -44,4 +50,4 @@ install-lint-deps:
 lint: install-lint-deps
 	golangci-lint run ./...
 
-.PHONY: build run build-img run-img version test lint
+.PHONY: build run build-img run-img version test lint up down

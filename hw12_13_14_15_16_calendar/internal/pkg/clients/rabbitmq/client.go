@@ -26,7 +26,7 @@ func NewClient(url, queue string) (*Client, error) {
 		return nil, errors.Wrap(err, "[rabbitmq::NewClient]: failed to open amqp channel")
 	}
 
-	if _, err = channel.QueueDeclare(queue, false, false, true, false, nil); err != nil {
+	if _, err = channel.QueueDeclare(queue, true, false, false, false, nil); err != nil {
 		return nil, errors.Wrapf(err, "[rabbitmq::NewClient]: failed to declare amqp queue %q", queue)
 	}
 
