@@ -125,7 +125,7 @@ func TestListingEvents(t *testing.T) {
 	events := make([]*eventspb.Event, 0, 3)
 
 	for i := range 3 {
-		mx := time.Duration(i)
+		mx := time.Duration(int64(i))
 		step := 6 * 24 * time.Hour
 		uid := uuid.New().String()
 		event := &eventspb.Event{
