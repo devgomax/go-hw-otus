@@ -125,14 +125,14 @@ func TestListingEvents(t *testing.T) {
 	events := make([]*eventspb.Event, 0, 3)
 
 	for i := range 3 {
-		mx := time.Duration(int64(i))
+		mx := time.Duration(i)
 		step := 6 * 24 * time.Hour
 		uid := uuid.New().String()
 		event := &eventspb.Event{
 			Id:             uid,
 			Title:          uid,
-			StartsAt:       timestamppb.New(now.Add(step * mx)),
-			EndsAt:         timestamppb.New(now.Add(step*mx + 1*time.Hour)),
+			StartsAt:       timestamppb.New(now.Add(step * mx)),             //nolint:durationcheck
+			EndsAt:         timestamppb.New(now.Add(step*mx + 1*time.Hour)), //nolint:durationcheck
 			Description:    "test1desc",
 			UserId:         userID,
 			NotifyInterval: durationpb.New(15 * time.Minute),
