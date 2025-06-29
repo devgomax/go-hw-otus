@@ -15,6 +15,7 @@ func (i *Implementation) CreateEvent(ctx context.Context, req *eventspb.Event) (
 
 	if err := i.app.CreateEvent(
 		ctx,
+		req.Id,
 		req.Title,
 		req.Description,
 		req.UserId,

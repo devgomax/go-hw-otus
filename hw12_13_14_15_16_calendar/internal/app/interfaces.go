@@ -9,7 +9,7 @@ import (
 
 // IApp основной API интерфейс.
 type IApp interface {
-	CreateEvent(ctx context.Context, title, description, userID string, startsAt, endAt *time.Time, notifyInterval time.Duration) error //nolint:lll
+	CreateEvent(ctx context.Context, id, title, description, userID string, startsAt, endAt *time.Time, notifyInterval time.Duration) error //nolint:lll
 	DeleteEvent(ctx context.Context, eventID string) error
 	ReadDailyEvents(ctx context.Context, userID string, date time.Time) ([]*storage.Event, error)
 	ReadWeeklyEvents(ctx context.Context, userID string, date time.Time) ([]*storage.Event, error)

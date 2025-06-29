@@ -23,14 +23,23 @@ type IDeliveryMQ interface {
 	GetBody() []byte
 }
 
+// IRepository интерфейс БД.
+type IRepository interface {
+	SetEventsProcessedStatus(ctx context.Context, ids ...string) error
+	Connect(ctx context.Context, dsn string) error
+	Close()
+}
+
 // App структура приложения рассыльщика.
 type App struct {
+	repo     IRepository
 	consumer IConsumerMQ
 }
 
 // NewApp конструктор приложения рассыльщика.
-func NewApp(consumer IConsumerMQ) *App {
+func NewApp(repo IRepository, consumer IConsumerMQ) *App {
 	return &App{
+		repo:     repo,
 		consumer: consumer,
 	}
 }
@@ -58,7 +67,10 @@ func (a *App) Run(ctx context.Context) error {
 			continue
 		}
 
-		log.Info().RawJSON("notification", body).Msg("notification sent successfully")
+		if err = a.repo.SetEventsProcessedStatus(ctx, notification.EventID); err != nil {
+			log.Error().Err(err).Bytes("notification", body).Msg(
+				"[sender::Run]: failed to update events DB statuses")
+		}
 	}
 
 	return nil

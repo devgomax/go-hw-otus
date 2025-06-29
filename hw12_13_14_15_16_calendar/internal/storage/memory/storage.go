@@ -188,3 +188,12 @@ func (r *Repository) ReadEventsToNotify(_ context.Context) ([]*storage.Event, er
 
 	return result, nil
 }
+
+// SetEventsProcessedStatus помечает события, как обработанные (уведомления отправлены).
+func (r *Repository) SetEventsProcessedStatus(_ context.Context, ids ...string) error {
+	processed := true
+	for _, id := range ids {
+		r.eventsByID[id].Processed = &processed
+	}
+	return nil
+}

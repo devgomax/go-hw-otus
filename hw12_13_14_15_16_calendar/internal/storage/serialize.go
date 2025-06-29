@@ -19,5 +19,7 @@ func Serialize(e *Event) (map[string]any, error) {
 		return nil, errors.Wrap(err, "[storage::Serialize]: can't unmarshal data")
 	}
 
+	dest["notify_interval"] = e.NotifyInterval
+
 	return dest, nil
 }
