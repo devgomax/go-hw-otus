@@ -9,6 +9,8 @@ import (
 	"github.com/devgomax/go-hw-otus/hw12_13_14_15_calendar/internal/app/sender/adapters"
 	"github.com/devgomax/go-hw-otus/hw12_13_14_15_calendar/internal/config"
 	"github.com/devgomax/go-hw-otus/hw12_13_14_15_calendar/internal/logger"
+	memorystorage "github.com/devgomax/go-hw-otus/hw12_13_14_15_calendar/internal/storage/memory"
+	sqlstorage "github.com/devgomax/go-hw-otus/hw12_13_14_15_calendar/internal/storage/sql"
 	"github.com/rs/zerolog/log"
 )
 
@@ -34,7 +36,25 @@ func main() {
 		log.Fatal().Err(err).Msg("failed to create amqp client")
 	}
 
-	app := sender.NewApp(rmq)
+	var repo sender.IRepository
+
+	switch cfg.Database.DBType {
+	case config.DBTypeSQL:
+		repo = sqlstorage.New()
+	case config.DBTypeInMemory:
+		repo = memorystorage.New()
+	default:
+		cancel()
+		log.Fatal().Msg("invalid config value for db_type")
+	}
+
+	if err = repo.Connect(ctx, ""); err != nil { // Empty DNS for PG to process environment variables
+		cancel()
+		log.Fatal().Err(err).Msg("failed to connect to DB")
+	}
+	defer repo.Close()
+
+	app := sender.NewApp(repo, rmq)
 
 	go func() {
 		<-ctx.Done()

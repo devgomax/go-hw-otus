@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"os/signal"
+	"sync"
 	"syscall"
 
 	"github.com/devgomax/go-hw-otus/hw12_13_14_15_calendar/internal/app/scheduler"
@@ -56,7 +57,11 @@ func main() {
 
 	app := scheduler.NewApp(repo, rmq)
 
+	wg := sync.WaitGroup{}
+
+	wg.Add(1)
 	go func() {
+		defer wg.Done()
 		<-ctx.Done()
 
 		if err = app.Stop(); err != nil {
@@ -68,4 +73,6 @@ func main() {
 		cancel()
 		log.Fatal().Err(err).Msg("failed to run scheduler")
 	}
+
+	wg.Wait()
 }

@@ -220,25 +220,25 @@ func (r *Repository) ReadEventsToNotify(ctx context.Context) ([]*storage.Event, 
 		return nil, errors.Wrap(err, "[sqlstorage::ReadEventsToNotify]: can't execute sql query")
 	}
 
-	ids := make([]string, 0, len(events))
-	for _, event := range events {
-		ids = append(ids, event.ID)
-	}
+	return events, nil
+}
 
-	updBuilder := sq.StatementBuilder.PlaceholderFormat(sq.Dollar).
+// SetEventsProcessedStatus помечает события, как обработанные (уведомления отправлены).
+func (r *Repository) SetEventsProcessedStatus(ctx context.Context, ids ...string) error {
+	builder := sq.StatementBuilder.PlaceholderFormat(sq.Dollar).
 		Update(eventsTable).
 		Set("processed", true).
 		Where(sq.Eq{"id": ids})
 
-	query, args, err = updBuilder.ToSql()
+	query, args, err := builder.ToSql()
 	if err != nil {
-		return nil, errors.Wrap(err, "[sqlstorage::ReadEventsToNotify]: can't build sql query")
+		return errors.Wrap(err, "[sqlstorage::SetEventsProcessedStatus]: can't build sql query")
 	}
 
 	_, err = r.pool.Exec(ctx, query, args...)
 	if err != nil {
-		return nil, errors.Wrap(err, "[sqlstorage::ReadEventsToNotify]: can't execute sql query")
+		return errors.Wrap(err, "[sqlstorage::SetEventsProcessedStatus]: can't execute sql query")
 	}
 
-	return events, nil
+	return nil
 }

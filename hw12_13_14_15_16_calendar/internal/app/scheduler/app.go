@@ -46,7 +46,7 @@ func (a *App) Run(ctx context.Context, tickd time.Duration) error {
 	for {
 		select {
 		case <-ctx.Done():
-			return errors.Wrap(ctx.Err(), "[scheduler::Run]")
+			return nil
 		case <-ticker.C:
 			events, err := a.repo.ReadEventsToNotify(ctx)
 			if err != nil {

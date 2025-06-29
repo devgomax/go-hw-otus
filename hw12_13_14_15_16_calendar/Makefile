@@ -14,6 +14,12 @@ build:
 run: build
 	$(BIN)/calendar --config="./configs/config.toml"
 
+up:
+	docker-compose -f ./deployments/docker-compose.yaml up -d
+
+down:
+	docker-compose -f ./deployments/docker-compose.yaml down
+
 migration:
 	goose create change_my_name sql -dir $(GOOSE_MIGRATION_DIR)
 
@@ -35,6 +41,12 @@ version: build
 test:
 	go test -race ./internal/...
 
+integration-tests:
+	@docker-compose -f ./test/e2e/docker-compose.test.yaml up -d
+	@go test ./test/e2e/ -v; TEST_EXIT=$$?; \
+	docker-compose -f ./test/e2e/docker-compose.test.yaml down -v; \
+	if [ $$TEST_EXIT -ne 0 ]; then exit 1; else exit 0; fi
+
 generate:
 	go generate
 
@@ -44,4 +56,4 @@ install-lint-deps:
 lint: install-lint-deps
 	golangci-lint run ./...
 
-.PHONY: build run build-img run-img version test lint
+.PHONY: build run build-img run-img version test lint up down

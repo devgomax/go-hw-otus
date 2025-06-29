@@ -11,6 +11,7 @@ import (
 // CreateEvent метод регистрации события.
 func (a *App) CreateEvent(
 	ctx context.Context,
+	id string,
 	title string,
 	description string,
 	userID string,
@@ -19,6 +20,7 @@ func (a *App) CreateEvent(
 	notifyInterval time.Duration,
 ) error {
 	event := storage.Event{
+		ID:             id,
 		Title:          title,
 		StartsAt:       startsAt,
 		EndsAt:         endAt,

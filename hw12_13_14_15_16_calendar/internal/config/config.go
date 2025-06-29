@@ -1,7 +1,8 @@
 package config
 
 import (
-	"fmt"
+	"net"
+	"strings"
 	"time"
 
 	"github.com/pkg/errors"
@@ -50,7 +51,7 @@ type ServerConfig struct {
 
 // GetAddr возвращает строку вида "host:port".
 func (sc *ServerConfig) GetAddr() string {
-	return fmt.Sprintf("%s:%s", sc.Host, sc.Port)
+	return net.JoinHostPort(sc.Host, sc.Port)
 }
 
 // MessageQueueConfig модель конфига для очереди сообщений.
@@ -85,8 +86,11 @@ func NewConfig() (*Config, error) {
 
 	var c Config
 
-	viper.SetConfigFile(*configPath)
+	replacer := strings.NewReplacer(".", "_")
+	viper.SetEnvKeyReplacer(replacer)
 	viper.AutomaticEnv()
+	viper.SetConfigFile(*configPath)
+
 	if err := viper.ReadInConfig(); err != nil {
 		return nil, errors.Wrap(err, "[main::NewConfig]: failed to discover and read config file")
 	}
