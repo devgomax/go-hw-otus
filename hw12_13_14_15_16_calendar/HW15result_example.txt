@@ -1,0 +1,76 @@
+➜  hw12_13_14_15_16_calendar git:(hw15_calendar) ✗ make integration-tests
+[+] Running 9/9
+ ✔ Network e2e_default         Created                                                                                                                                                                                                                                                                        0.0s
+ ✔ Volume "e2e_postgres_data"  Created                                                                                                                                                                                                                                                                        0.0s
+ ✔ Volume "e2e_rabbitmq_data"  Created                                                                                                                                                                                                                                                                        0.0s
+ ✔ Container postgres_test     Healthy                                                                                                                                                                                                                                                                       10.8s
+ ✔ Container rabbitmq_test     Healthy                                                                                                                                                                                                                                                                       11.4s
+ ✔ Container migrations_test   Exited                                                                                                                                                                                                                                                                        11.3s
+ ✔ Container sender_test       Started                                                                                                                                                                                                                                                                       10.8s
+ ✔ Container calendar_test     Started                                                                                                                                                                                                                                                                       11.4s
+ ✔ Container scheduler_test    Started                                                                                                                                                                                                                                                                       11.4s
+=== RUN   TestCreateEvent
+--- PASS: TestCreateEvent (0.09s)
+=== RUN   TestListingEvents
+--- PASS: TestListingEvents (0.01s)
+=== RUN   TestReadDailyEventsCornerCases
+=== RUN   TestReadDailyEventsCornerCases/event_end_<_search_start
+=== RUN   TestReadDailyEventsCornerCases/search_start_=_event_end
+=== RUN   TestReadDailyEventsCornerCases/event_start_<_search_start_<_event_end
+=== RUN   TestReadDailyEventsCornerCases/search_start_<_event_start_<_event_end_<_search_end
+=== RUN   TestReadDailyEventsCornerCases/event_start_<_search_end_<_event_end
+=== RUN   TestReadDailyEventsCornerCases/event_start_=_search_end
+=== RUN   TestReadDailyEventsCornerCases/search_end_<_event_start
+--- PASS: TestReadDailyEventsCornerCases (0.02s)
+    --- PASS: TestReadDailyEventsCornerCases/event_end_<_search_start (0.00s)
+    --- PASS: TestReadDailyEventsCornerCases/search_start_=_event_end (0.00s)
+    --- PASS: TestReadDailyEventsCornerCases/event_start_<_search_start_<_event_end (0.00s)
+    --- PASS: TestReadDailyEventsCornerCases/search_start_<_event_start_<_event_end_<_search_end (0.00s)
+    --- PASS: TestReadDailyEventsCornerCases/event_start_<_search_end_<_event_end (0.00s)
+    --- PASS: TestReadDailyEventsCornerCases/event_start_=_search_end (0.00s)
+    --- PASS: TestReadDailyEventsCornerCases/search_end_<_event_start (0.00s)
+=== RUN   TestReadWeeklyEventsCornerCases
+=== RUN   TestReadWeeklyEventsCornerCases/event_end_<_search_start
+=== RUN   TestReadWeeklyEventsCornerCases/search_start_=_event_end
+=== RUN   TestReadWeeklyEventsCornerCases/event_start_<_search_start_<_event_end
+=== RUN   TestReadWeeklyEventsCornerCases/search_start_<_event_start_<_event_end_<_search_end
+=== RUN   TestReadWeeklyEventsCornerCases/event_start_<_search_end_<_event_end
+=== RUN   TestReadWeeklyEventsCornerCases/event_start_=_search_end
+=== RUN   TestReadWeeklyEventsCornerCases/search_end_<_event_start
+--- PASS: TestReadWeeklyEventsCornerCases (0.01s)
+    --- PASS: TestReadWeeklyEventsCornerCases/event_end_<_search_start (0.00s)
+    --- PASS: TestReadWeeklyEventsCornerCases/search_start_=_event_end (0.00s)
+    --- PASS: TestReadWeeklyEventsCornerCases/event_start_<_search_start_<_event_end (0.00s)
+    --- PASS: TestReadWeeklyEventsCornerCases/search_start_<_event_start_<_event_end_<_search_end (0.00s)
+    --- PASS: TestReadWeeklyEventsCornerCases/event_start_<_search_end_<_event_end (0.00s)
+    --- PASS: TestReadWeeklyEventsCornerCases/event_start_=_search_end (0.00s)
+    --- PASS: TestReadWeeklyEventsCornerCases/search_end_<_event_start (0.00s)
+=== RUN   TestReadMonthlyEventsCornerCases
+=== RUN   TestReadMonthlyEventsCornerCases/event_end_<_search_start
+=== RUN   TestReadMonthlyEventsCornerCases/search_start_=_event_end
+=== RUN   TestReadMonthlyEventsCornerCases/event_start_<_search_start_<_event_end
+=== RUN   TestReadMonthlyEventsCornerCases/search_start_<_event_start_<_event_end_<_search_end
+=== RUN   TestReadMonthlyEventsCornerCases/event_start_<_search_end_<_event_end
+=== RUN   TestReadMonthlyEventsCornerCases/event_start_=_search_end
+=== RUN   TestReadMonthlyEventsCornerCases/search_end_<_event_start
+--- PASS: TestReadMonthlyEventsCornerCases (0.01s)
+    --- PASS: TestReadMonthlyEventsCornerCases/event_end_<_search_start (0.00s)
+    --- PASS: TestReadMonthlyEventsCornerCases/search_start_=_event_end (0.00s)
+    --- PASS: TestReadMonthlyEventsCornerCases/event_start_<_search_start_<_event_end (0.00s)
+    --- PASS: TestReadMonthlyEventsCornerCases/search_start_<_event_start_<_event_end_<_search_end (0.00s)
+    --- PASS: TestReadMonthlyEventsCornerCases/event_start_<_search_end_<_event_end (0.00s)
+    --- PASS: TestReadMonthlyEventsCornerCases/event_start_=_search_end (0.00s)
+    --- PASS: TestReadMonthlyEventsCornerCases/search_end_<_event_start (0.00s)
+PASS
+ok      github.com/devgomax/go-hw-otus/hw12_13_14_15_calendar/test/e2e  (cached)
+[+] Running 9/9
+ ✔ Container sender_test      Removed                                                                                                                                                                                                                                                                         0.1s
+ ✔ Container calendar_test    Removed                                                                                                                                                                                                                                                                         0.2s
+ ✔ Container scheduler_test   Removed                                                                                                                                                                                                                                                                        10.1s
+ ✔ Container migrations_test  Removed                                                                                                                                                                                                                                                                         0.0s
+ ✔ Container rabbitmq_test    Removed                                                                                                                                                                                                                                                                         1.3s
+ ✔ Container postgres_test    Removed                                                                                                                                                                                                                                                                         0.2s
+ ✔ Network e2e_default        Removed                                                                                                                                                                                                                                                                         0.2s
+ ✔ Volume e2e_rabbitmq_data   Removed                                                                                                                                                                                                                                                                         0.0s
+ ✔ Volume e2e_postgres_data   Removed                                                                                                                                                                                                                                                                         0.0s
+➜  hw12_13_14_15_16_calendar git:(hw15_calendar) ✗
